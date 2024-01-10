@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciasny Mati Clicker 💎</title>
+    
+<!-- // -------------------------------------------------------------------------- STYLE -->
+    
+    <style>
+        body {
+            font-family: 'Calibri', sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+
+        #mati-img {
+            width: 150px;
+            height: auto;
+            cursor: pointer;
+            transition: transform 0.08s ease-in-out;
+        }
+
+        #mati-img.clicked {
+            transform: scale(1.1);
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #bank, #shop, #okrzei, #debug {
+            background-color: #4CAF50;
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #debug button {
+            margin: 5px;
+            padding: 5px;
+        }
+
+        #popup {
+            display: none;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 8px;
+            z-index: 999;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <h1>Ciasny Mati Clicker</h1>
+        <img src="mati.png" alt="Mati" id="mati-img" onclick="handleClick()">
+    </div>
+
+
+<!-- // -------------------------------------------------------------------------- BANK -->
+
+    <div id="bank">
+        <h2>Bank</h2>
+        <p>Kryształy: <span id="diamonds">0</span> 💎</p>
+        <p>Bilet Okrzejaka: <span id="tickets">0</span> 🎫</p>
+        <p>Stan Konta: <span id="dollars">0</span> $</p>
+        <p>Piwo: <span id="beer">0</span> 🍺</p>
+    </div>
+
+<!-- // -------------------------------------------------------------------------- SKLEP -->
+
+    <div id="shop">
+        <h2>Sklep</h2>
+        <p>Mnożnik Kliknięć: x<span id="multiplier">1</span></p>
+        <p>Auto Klikanie: <span id="auto-click">Brak</span></p>
+        <p>Koszt Mnożnika: $<span id="multiplier-cost">2</span></p>
+        <button onclick="buyMultiplier()">Kup Mnożnik</button>
+        <hr>
+        <p>Kup Kryształ: $5000</p>
+        <button onclick="buyDiamond()">Kup Kryształ</button>
+        <hr>
+        <p>Kup Bilet Okrzejaka: 3 💎</p>
+        <button onclick="buyOkrzejakTicket()">Kup Bilet Okrzejaka</button>
+        <hr>
+        <p>Koszt Auto Klikania: <span id="auto-click-cost">50</span> 💎</p>
+        <button onclick="buyAutoClick()">Kup Automatyczne Klikanie</button>
+        <hr>
+        <p>Kup Bilet do żagania: 5 🎫</p>
+        <button onclick="buyZaganTicket()">Kup Bilet do żagania</button>
+    </div>
+
+<!-- // -------------------------------------------------------------------------- OKRZEI -->
+
+    <div id="okrzei">
+        <h2>Okrzei</h2>
+        <p>Okrejzak?: <span id="okrzejak-status">Nie</span></p>
+        <button onclick="enterOkrzei()">Wejdź na Okrzei (1 bilet)</button>
+        <hr>
+        <p>Bilet do żagania: 5 🎫</p>
+        <button onclick="buyZaganTicket()">Kup Bilet do żagania</button>
+        <hr>
+        <p>Okrzei 23:00: 10 🎫</p>
+        <button onclick="buyOkrzeiEvent()">Kup Okrzei 23:00</button>
+    </div>
+
+    <div id="popup"></div>
+
+<!-- // -------------------------------------------------------------------------- DEBUG MODE   
+
+    
+    
+    <div id="debug">
+        <h2>Debug</h2>
+        <button onclick="addMoney()">Dodaj Pieniądze</button>
+        <button onclick="addDiamonds()">Dodaj Kryształy</button>
+        <button onclick="addTickets()">Dodaj Bilety Okrzejaka</button>
+        <button onclick="resetMoney()">Wyzeruj Pieniądze</button>
+    </div>
+
+
+-->
+
+<script>
+        let dollars = 0;
+        let diamonds = 0;
+        let tickets = 0;
+        let beer = 0;
+        let clickMultiplier = 1; 
+        let multiplierCost = 2.1;
+        let autoClickLevel = 0;
+        let autoClickCost = 50;
+        let autoClickInterval = 1000; // 1 sekunda
+        let okrzejakStatus = false;
+        let matiImage = document.getElementById('mati-img');
+        let autoClickIntervalId;
+
+        function handleClick() {
+            matiImage.classList.add('clicked');
+            setTimeout(() => {
+                matiImage.classList.remove('clicked');
+            }, 80);
+
+            dollars += clickMultiplier;
+            updateUI();
+        }
+
+        function buyMultiplier() {
+            const cost = Math.round(multiplierCost);
+            if (dollars >= cost) {
+                dollars -= cost;
+                clickMultiplier++;
+                multiplierCost *= 1.1; // Zwiększ koszt o 10%
+                updateUI();
+            } else {
+                alert('Za mało dolarów!');
+            }
+        }
+
+        function buyDiamond() {
+            const cost = 5000;
+            if (dollars >= cost) {
+                dollars -= cost;
+                diamonds++;
+                updateUI();
+            } else {
+                alert('Za mało dolarów!');
+            }
+        }
+
+        function buyOkrzejakTicket() {
+            const cost = 3;
+            if (diamonds >= cost) {
+                diamonds -= cost;
+                tickets++;
+                updateUI();
+            } else {
+                alert('Za mało diamentów!');
+            }
+        }
+
+        function buyAutoClick() {
+            const cost = autoClickCost;
+            if (diamonds >= cost) {
+                diamonds -= cost;
+                autoClickLevel++;
+                autoClickCost *= 1.5; // Zwiększ koszt o 50%
+                setAutoClickInterval();
+                updateUI();
+            } else {
+                alert('Za mało diamentów!');
+            }
+        }
+
+        function buyZaganTicket() {
+            const cost = 5;
+            if (tickets >= cost) {
+                tickets -= cost;
+                showZaganPopup();
+                updateUI();
+            } else {
+                alert('Za mało biletów!');
+            }
+        }
+
+        function showZaganPopup() {
+            const outcome = Math.random() < 0.5; // 50% szans
+            if (outcome) {
+                beer++;
+                showPopup('Pokonałeś Menela, otrzymujesz piwo 🍺');
+            } else {
+                showPopup('Menel był silniejszy... przegrywasz walkę ❌');
+            }
+        }
+
+        function buyOkrzeiEvent() {
+            const cost = 10;
+            if (tickets >= cost) {
+                tickets -= cost;
+                showOkrzeiEventPopup();
+                updateUI();
+            } else {
+                alert('Za mało biletów!');
+            }
+        }
+
+        function showOkrzeiEventPopup() {
+            const outcome = Math.random() < 0.5; // 50% szans
+            if (outcome) {
+                diamonds += 100;
+                showPopup('Przeżyłeś, otrzymujesz 100 kryształów 💎');
+            } else {
+                diamonds = 0;
+                showPopup('Okrzei o 23:00 to nie był dobry pomysł... Tracisz cały kryształ 💎❌');
+            }
+        }
+
+        function setAutoClickInterval() {
+            autoClickInterval = 1000 - autoClickLevel * 200;
+            if (autoClickInterval < 100) {
+                autoClickInterval = 100; // Minimum 100 ms
+            }
+            clearInterval(autoClickIntervalId);
+            autoClickIntervalId = setInterval(autoClick, autoClickInterval);
+        }
+
+        function autoClick() {
+            dollars += clickMultiplier;
+            updateUI();
+        }
+
+        function enterOkrzei() {
+            if (okrzejakStatus) {
+                alert('Już jesteś na Okrzei!');
+            } else if (tickets >= 1) {
+                tickets--;
+                okrzejakStatus = true;
+                updateUI();
+            } else {
+                alert('Za mało biletów!');
+            }
+        }
+
+        function showPopup(message) {
+            const popup = document.getElementById('popup');
+            popup.textContent = message;
+            popup.style.display = 'block';
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000); // Ukryj po 3 sekundach
+        }
+
+        function addMoney() {
+            const amount = parseFloat(prompt('Podaj ilość dodawanych pieniędzy:'));
+            if (!isNaN(amount)) {
+                dollars += amount;
+                updateUI();
+            } else {
+                alert('Nieprawidłowe dane!');
+            }
+        }
+
+        function addDiamonds() {
+            const amount = parseFloat(prompt('Podaj ilość dodawanych kryształów:'));
+            if (!isNaN(amount)) {
+                diamonds += amount;
+                updateUI();
+            } else {
+                alert('Nieprawidłowe dane!');
+            }
+        }
+
+        function addTickets() {
+            const amount = parseFloat(prompt('Podaj ilość dodawanych biletów okrzejaka:'));
+            if (!isNaN(amount)) {
+                tickets += amount;
+                updateUI();
+            } else {
+                alert('Nieprawidłowe dane!');
+            }
+        }
+
+        function resetMoney() {
+            dollars = 0;
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('dollars').textContent = dollars;
+            document.getElementById('diamonds').textContent = diamonds;
+            document.getElementById('tickets').textContent = tickets;
+            document.getElementById('beer').textContent = beer;
+            document.getElementById('multiplier').textContent = clickMultiplier;
+            document.getElementById('multiplier-cost').textContent = Math.round(multiplierCost);
+            document.getElementById('okrzejak-status').textContent = okrzejakStatus ? 'Tak' : 'Nie';
+            document.getElementById('auto-click').textContent = autoClickLevel > 0 ? `Auto Klikanie: ${autoClickInterval / 1000}s` : 'Brak';
+            document.getElementById('auto-click-cost').textContent = autoClickInterval <= 100 ? 'MAXYMALNY POZIOM' : Math.ceil(autoClickCost); // Zaokrąglaj koszt w górę
+        }
+    </script>
+</body>
+</html>
